@@ -32,25 +32,38 @@ interface WeatherObservation {
 }
 
 interface WeatherChartsProps {
-  data: {
-    obs: WeatherObservation[];
-    summary: {
-      start_time: number;
-      end_time: number;
-    };
-  };
-  showOnly?: ('temperature' | 'humidity' | 'rain')[];
+  data: any;
+  showOnly?: string[];
 }
 
-export function WeatherCharts({ data, showOnly }: WeatherChartsProps) {
-  if (!data || !data.obs) {
+export function WeatherCharts({ data, showOnly = ['temperature'] }: WeatherChartsProps) {
+  if (!data) {
     return (
-      <Card className="p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-white/10 rounded w-1/3"></div>
-          <div className="h-64 bg-white/10 rounded"></div>
+      <div className="min-h-[400px] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-400 border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (data.error) {
+    return (
+      <div className="min-h-[400px] flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto">
+          <p className="text-xl mb-2 text-red-500">⚠️</p>
+          <p className="text-red-400 mb-2">{data.error}</p>
+          {data.details && (
+            <p className="text-sm text-gray-400 mb-4">{data.details}</p>
+          )}
+          <div className="flex gap-3 justify-center">
+            <button 
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-blue-400/20 hover:bg-blue-400/30 rounded-lg transition-colors"
+            >
+              Retry
+            </button>
+          </div>
         </div>
-      </Card>
+      </div>
     );
   }
 

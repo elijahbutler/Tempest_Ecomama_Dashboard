@@ -50,6 +50,7 @@ export default function Home() {
   const [chartData, setChartData] = useState<any>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [activeTab, setActiveTab] = useState<'current' | 'charts' | 'monthly'>('current');
+  const stationName = process.env.NEXT_PUBLIC_STATION_NAME || 'Weather Station';
 
   useEffect(() => {
     const fetchData = async () => {
@@ -73,14 +74,24 @@ export default function Home() {
       setChartData(null);
       axios.get('/api/historical')
         .then(response => {
-          if (response.data && response.data.obs) {
+          if (response.data && response.data.obs && response.data.obs.length > 0) {
             setChartData(response.data);
           } else {
-            console.error('Invalid data format received');
+            console.error('No historical data available:', response.data);
+            setChartData({ 
+              error: response.data?.error || 'No historical data available',
+              details: response.data?.details || 'No observations found'
+            });
           }
         })
         .catch(error => {
-          console.error('Error fetching chart data:', error);
+          const errorMessage = error.response?.data?.error || error.message || 'Failed to load historical data';
+          const errorDetails = error.response?.data?.details || error.toString();
+          console.error('Error fetching chart data:', { message: errorMessage, details: errorDetails });
+          setChartData({ 
+            error: errorMessage,
+            details: errorDetails
+          });
         });
     }
   }, [activeTab]);
@@ -133,8 +144,8 @@ export default function Home() {
                             flex items-center gap-1.5 ml-3 md:ml-6
                             shrink-0"> {/* Prevent shrinking */}
               <span className="text-base md:text-lg">📍</span>
-              <span className="font-medium hidden sm:inline">Salt Lake City Station</span>
-              <span className="font-medium sm:hidden">SLC</span> {/* Short name for mobile */}
+              <span className="font-medium hidden sm:inline">{stationName}</span>
+              <span className="font-medium sm:hidden">{stationName.split(' ')[0]}</span> {/* Short name for mobile */}
             </div>
           </div>
         </div>
